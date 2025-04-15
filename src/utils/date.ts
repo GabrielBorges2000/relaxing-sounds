@@ -15,11 +15,11 @@ export function formatDate(dateString: string): string {
 
     // Format date based on how recent it is
     if (date >= today) {
-      return `Today at ${formatTime(date)}`
+      return `Today at ${formatTime(date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds())}`
     } else if (date >= yesterday) {
-      return `Yesterday at ${formatTime(date)}`
+      return `Yesterday at ${formatTime(date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds())}`
     } else {
-      return `${date.toLocaleDateString()} at ${formatTime(date)}`
+      return `${date.toLocaleDateString()} at ${formatTime(date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds())}`
     }
   } catch (error) {
     console.error("Error formatting date:", error)
@@ -27,15 +27,14 @@ export function formatDate(dateString: string): string {
   }
 }
 
-function formatTime(date: Date): string {
-  let hours = date.getHours()
-  const minutes = date.getMinutes()
-  const ampm = hours >= 12 ? "PM" : "AM"
+export function formatTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600); // Get whole hours
+  const minutes = Math.floor((seconds % 3600) / 60); // Get whole minutes
+  const remainingSeconds = seconds % 60; // Get remaining seconds
 
-  hours = hours % 12
-  hours = hours ? hours : 12 // the hour '0' should be '12'
+  const formattedHours = Math.max(0, hours).toString().padStart(2, '0');
+  const formattedMinutes = Math.max(0, minutes).toString().padStart(2, '0');
+  const formattedSeconds = Math.max(0, Math.floor(remainingSeconds)).toString().padStart(2, '0');
 
-  const minutesStr = minutes < 10 ? `0${minutes}` : minutes
-
-  return `${hours}:${minutesStr} ${ampm}`
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }

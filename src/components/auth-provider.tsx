@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, { memo } from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import * as WebBrowser from "expo-web-browser"
 import * as SecureStore from "expo-secure-store"
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   // Sign in with Google
-  async function signInWithGoogle(){
+  const signInWithGoogle = async () => {
     try {
       await GoogleSignin.hasPlayServices()
       const response = await GoogleSignin.signIn()     
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.log("Error signing in with Google:", error)
       throw error
-    }
+    }    
   }
 
   // Sign out
@@ -111,3 +111,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
 export function useAuth() {
   return useContext(AuthContext)
 }
+
+export default memo(AuthProvider);

@@ -1,3 +1,4 @@
+import * as React from "react"
 import { View, StyleSheet } from "react-native"
 import * as RNSlider from "@react-native-community/slider"
 import { useTheme } from "./theme-provider"
@@ -51,3 +52,5 @@ const styles = StyleSheet.create({
     height: 40,
   },
 })
+
+export default React.memo(Slider, (prevProps, nextProps) => prevProps.value === nextProps.value && prevProps.onValueChange === nextProps.onValueChange);

@@ -1,9 +1,11 @@
 
+import React from 'react'
 import { StyleSheet, View } from "react-native"
 import { MotiView } from "moti"
 import { useTheme } from "./theme-provider"
 
-export function AnimatedBackground() {
+
+const _AnimatedBackground = () => {
   const { theme } = useTheme()
 
   return (
@@ -64,6 +66,8 @@ export function AnimatedBackground() {
     </View>
   )
 }
+
+export const AnimatedBackground = React.memo(_AnimatedBackground)
 
 const styles = StyleSheet.create({
   container: {

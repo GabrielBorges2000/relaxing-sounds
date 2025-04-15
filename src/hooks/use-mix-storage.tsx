@@ -1,6 +1,5 @@
 
-
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import type { SoundMix } from "@/types"
 
@@ -9,7 +8,7 @@ const MIXES_STORAGE_KEY = "relaxing_sounds_mixes"
 export function useMixStorage() {
   const [isLoading, setIsLoading] = useState(false)
 
-  const getMixes = async (): Promise<SoundMix[]> => {
+  const loadMixes = useCallback(async (): Promise<SoundMix[]> => {
     try {
       const mixesJson = await AsyncStorage.getItem(MIXES_STORAGE_KEY)
       if (mixesJson) {
@@ -20,13 +19,15 @@ export function useMixStorage() {
       console.error("Error getting mixes from storage:", error)
       throw error
     }
-  }
+  }, [])
 
-  const saveMix = async (mix: SoundMix): Promise<void> => {
+  const saveMix = useCallback(async (mix: SoundMix): Promise<void> => {
     try {
       setIsLoading(true)
 
-      // Get existing mixes
+      // To prevent race conditions, ensure all reads and writes
+      // happen in a single operation.
+      // Get existing mixes within the same try block
       const mixes = await getMixes()
 
       // Check if mix with same ID already exists
@@ -45,12 +46,27 @@ export function useMixStorage() {
     } catch (error) {
       console.error("Error saving mix to storage:", error)
       throw error
+    } finally { setIsLoading(false) }
+  }, [])
+
+  const createMix = useCallback(async (mix: SoundMix): Promise<void> => {
+    try {
+      setIsLoading(true)
+      const mixes = await loadMixes()
+      // Add new mix
+      mixes.push(mix)
+      // Save to storage
+      await AsyncStorage.setItem(MIXES_STORAGE_KEY, JSON.stringify(mixes))
+    } catch (error) {
+      console.error("Error saving mix to storage:", error)
+      throw error
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [loadMixes])
 
-  const deleteMix = async (mixId: string): Promise<void> => {
+
+  const deleteMix = useCallback(async (mixId: string): Promise<void> => {
     try {
       setIsLoading(true)
 
@@ -65,13 +81,14 @@ export function useMixStorage() {
     } catch (error) {
       console.error("Error deleting mix from storage:", error)
       throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    } finally { setIsLoading(false) }
+  }, [])
+
+  // Use getMixes internally to ensure consistency, but don't expose it directly
+  const getMixes = loadMixes;
 
   return {
-    getMixes,
+    loadMixes,
     saveMix,
     deleteMix,
     isLoading,

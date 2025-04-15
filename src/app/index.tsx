@@ -234,36 +234,27 @@ export default function MixCreator() {
     Alert.alert("Sucesso", "Mix salvo com sucesso!")
   }
 
-  const handlePlayMix = () => {
-    // Parar o mixer atual se estiver tocando
-    if (currentMix && isPlaying) {
-      stopMix()
-    }
+    const handlePlayMix = () => {
+        if (currentMix && isPlaying) {
+            stopMix();
+        }
 
-    // Parar todos os sons em preview
-    stopAllSounds()
+        stopAllSounds();
 
-    const activeSoundIds = Object.entries(volumes)
-      .filter(([_, volume]) => volume > 0)
-      .map(([id, volume]) => ({ id, volume }))
+        const activeSoundIds = Object.entries(volumes)
+            .filter(([_, volume]) => volume > 0)
+            .map(([id, volume]) => ({id, volume}));
 
-    if (activeSoundIds.length === 0) {
-      Alert.alert("Erro", "Adicione pelo menos um som ao seu mix")
-      return
-    }
+        if (activeSoundIds.length === 0) {
+            Alert.alert("Erro", "Adicione pelo menos um som ao seu mix");
+            return;
+        }
 
-    const mix: SoundMix = {
-      id: "temp",
-      name: mixName,
-      sounds: activeSoundIds,
-      createdAt: new Date().toISOString(),
-    }
+        const mix: SoundMix = {id: "temp", name: mixName, sounds: activeSoundIds, createdAt: new Date().toISOString()};
 
-    router.push({
-      pathname: "/mix/player",
-      params: { mix: JSON.stringify(mix) },
-    })
-  }
+        router.push({pathname: "/mix/player", params: {mix: JSON.stringify(mix)}});
+    };
+
 
   const handleUploadMix = () => {
     setUploadModalVisible(true)

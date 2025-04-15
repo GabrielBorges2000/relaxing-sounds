@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import React, { useState } from "react"
 import {
   Modal,
   View,
@@ -10,10 +10,10 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Keyboard,
-} from "react-native"
-import { useTheme } from "./theme-provider"
-import { ClockIcon, XIcon } from "./icons"
-import { MotiView } from "moti"
+} from 'react-native';
+import { useTheme } from './theme-provider';
+import { ClockIcon, XIcon } from './icons';
+import { MotiView } from 'moti';
 
 interface TimerModalProps {
   visible: boolean
@@ -22,37 +22,36 @@ interface TimerModalProps {
   customMinutes?: boolean
 }
 
-export function TimerModal({ visible, onClose, onSelectTimer, customMinutes = false }: TimerModalProps) {
-  const { theme } = useTheme()
-  const [customTime, setCustomTime] = useState("")
+export const TimerModal = React.memo(function TimerModal({ visible, onClose, onSelectTimer, customMinutes = false }: TimerModalProps) {
+  const { theme } = useTheme();
+  const [customTime, setCustomTime] = useState('');
 
   const timerOptions = [
-    { label: "1 min", value: 1 },
-    { label: "5 min", value: 5 },
-    { label: "15 min", value: 15 },
-    { label: "30 min", value: 30 },
-    { label: "45 min", value: 45 },
-    { label: "1 hora", value: 60 },
-  ]
+    { label: '1 min', value: 1 },
+    { label: '5 min', value: 5 },
+    { label: '15 min', value: 15 },
+    { label: '30 min', value: 30 },
+    { label: '45 min', value: 45 },
+    { label: '1 hora', value: 60 },
+  ];
 
   const handleCustomTimeSubmit = () => {
-    const minutes = Number.parseInt(customTime)
+    const minutes = Number.parseInt(customTime);
     if (!isNaN(minutes) && minutes > 0 && minutes <= 180) {
-      onSelectTimer(minutes)
-      setCustomTime("")
-      Keyboard.dismiss()
+      onSelectTimer(minutes);
+      setCustomTime('');
+      Keyboard.dismiss();
     } else {
-      alert("Por favor, insira um tempo válido entre 1 e 180 minutos.")
+      alert('Por favor, insira um tempo válido entre 1 e 180 minutos.');
     }
-  }
+  };
 
   return (
-    <Modal visible={visible} animationType="fade" onRequestClose={onClose} style={{flex: 1}}>
+    <Modal visible={visible} animationType="fade" onRequestClose={onClose} transparent={true}>
       <TouchableWithoutFeedback
-        style={{ flex: 1 }}
         onPress={() => {
-          Keyboard.dismiss()
-          onClose()
+          Keyboard.dismiss();
+          onClose();
         }}
       >
         <View style={styles.overlay}>
@@ -60,94 +59,94 @@ export function TimerModal({ visible, onClose, onSelectTimer, customMinutes = fa
             from={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            style={[styles.modalContent, { backgroundColor: theme.colors.card }]}
+            style={[styles.modalContent, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
           >
-            <View style={styles.header}>
-              <View style={styles.titleContainer}>
-                <ClockIcon color={theme.colors.primary} />
-                <Text style={[styles.title, { color: theme.colors.text }]}>Definir Temporizador</Text>
+              <View style={styles.header}>
+                  <View style={styles.titleContainer}> djskdjk
+                      <ClockIcon color={theme.colors.primary} />
+                      <Text style={[styles.title, { color: theme.colors.text }]}>Definir Temporizador</Text>
+                  </View>
+                  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                      <XIcon color={theme.colors.text} />
+                  </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <XIcon color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
 
-            <View style={styles.optionsContainer}>
-              {timerOptions.map((option, index) => (
-                <MotiView
-                  key={option.value}
-                  from={{ opacity: 0, translateY: 10 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                  transition={{ delay: index * 50 }}
-                >
-                  <TouchableOpacity
-                    style={[styles.optionButton, { borderColor: theme.colors.border }]}
-                    onPress={() => onSelectTimer(option.value)}
+              <View style={styles.optionsContainer}>
+                  {timerOptions.map((option, index) => (
+                      <MotiView
+                          key={option.value}
+                          from={{ opacity: 0, translateY: 10 }}
+                          animate={{ opacity: 1, translateY: 0 }}
+                          transition={{ delay: index * 50 }}
+                      >
+                          <TouchableOpacity
+                              style={[styles.optionButton, { borderColor: theme.colors.border }]}
+                              onPress={() => onSelectTimer(option.value)}
+                          >
+                              <Text style={[styles.optionText, { color: theme.colors.text }]}>{option.label}</Text>
+                          </TouchableOpacity>
+                      </MotiView>
+                  ))}
+
+                  {customMinutes && (
+                      <MotiView
+                          from={{ opacity: 0, translateY: 10 }}
+                          animate={{ opacity: 1, translateY: 0 }}
+                          transition={{ delay: timerOptions.length * 50 }}
+                          style={styles.customTimeContainer}
+                      >
+                          <TextInput
+                              style={[
+                                  styles.customTimeInput,
+                                  {
+                                      color: theme.colors.text,
+                                      borderColor: theme.colors.border,
+                                      backgroundColor: theme.colors.background,
+                                  },
+                              ]}
+                              placeholder="Tempo personalizado (min)"
+                              placeholderTextColor={theme.colors.textMuted}
+                              keyboardType="number-pad"
+                              value={customTime}
+                              onChangeText={setCustomTime}
+                              maxLength={3}
+                              returnKeyType="done"
+                              onSubmitEditing={handleCustomTimeSubmit}
+                          />
+                          <TouchableOpacity
+                              style={[styles.customTimeButton, { backgroundColor: theme.colors.primary }]}
+                              onPress={handleCustomTimeSubmit}
+                          >
+                              <Text style={[styles.customTimeButtonText, { color: theme.colors.buttonText }]}>Definir</Text>
+                          </TouchableOpacity>
+                      </MotiView>
+                  )}
+
+                  <MotiView
+                      from={{ opacity: 0, translateY: 10 }}
+                      animate={{ opacity: 1, translateY: 0 }}
+                      transition={{ delay: (timerOptions.length + 1) * 50 }}
                   >
-                    <Text style={[styles.optionText, { color: theme.colors.text }]}>{option.label}</Text>
-                  </TouchableOpacity>
-                </MotiView>
-              ))}
-
-              {customMinutes && (
-                <MotiView
-                  from={{ opacity: 0, translateY: 10 }}
-                  animate={{ opacity: 1, translateY: 0 }}
-                  transition={{ delay: timerOptions.length * 50 }}
-                  style={styles.customTimeContainer}
-                >
-                  <TextInput
-                    style={[
-                      styles.customTimeInput,
-                      {
-                        color: theme.colors.text,
-                        borderColor: theme.colors.border,
-                        backgroundColor: theme.colors.background,
-                      },
-                    ]}
-                    placeholder="Tempo personalizado (min)"
-                    placeholderTextColor={theme.colors.textMuted}
-                    keyboardType="number-pad"
-                    value={customTime}
-                    onChangeText={setCustomTime}
-                    maxLength={3}
-                    returnKeyType="done"
-                    onSubmitEditing={handleCustomTimeSubmit}
-                  />
-                  <TouchableOpacity
-                    style={[styles.customTimeButton, { backgroundColor: theme.colors.primary }]}
-                    onPress={handleCustomTimeSubmit}
-                  >
-                    <Text style={[styles.customTimeButtonText, { color: theme.colors.buttonText }]}>Definir</Text>
-                  </TouchableOpacity>
-                </MotiView>
-              )}
-
-              <MotiView
-                from={{ opacity: 0, translateY: 10 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ delay: (timerOptions.length + 1) * 50 }}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.optionButton,
-                    {
-                      borderColor: theme.colors.border,
-                      backgroundColor: theme.colors.error,
-                    },
-                  ]}
-                  onPress={() => onSelectTimer(0)}
-                >
-                  <Text style={[styles.optionText, { color: theme.colors.buttonText }]}>Desativar Timer</Text>
-                </TouchableOpacity>
-              </MotiView>
-            </View>
+                      <TouchableOpacity
+                          style={[
+                              styles.optionButton,
+                              {
+                                  borderColor: theme.colors.border,
+                                  backgroundColor: theme.colors.error,
+                              },
+                          ]}
+                          onPress={() => onSelectTimer(0)}
+                      >
+                          <Text style={[styles.optionText, { color: theme.colors.buttonText }]}>Desativar Timer</Text>
+                      </TouchableOpacity>
+                  </MotiView>
+              </View>
           </MotiView>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
-  )
-}
+  );
+}, (prevProps, nextProps) => prevProps.visible === nextProps.visible);
 
 const styles = StyleSheet.create({
   overlay: {
@@ -155,10 +154,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: 20,
   },
   modalContent: {
-    flex: 1,
+    width: '80%',
+    borderWidth: 1,
     borderRadius: 16,
     padding: 20,
   },
@@ -166,7 +165,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    paddingBottom: 20,
   },
   titleContainer: {
     flexDirection: "row",
@@ -178,10 +177,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
     alignItems: "center",
   },
   optionsContainer: {
@@ -191,7 +186,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    borderWidth: 1,
     alignItems: "center",
   },
   optionText: {
@@ -200,11 +194,8 @@ const styles = StyleSheet.create({
   },
   customTimeContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 5,
   },
   customTimeInput: {
-    flex: 1,
     height: 44,
     borderWidth: 1,
     borderRadius: 8,

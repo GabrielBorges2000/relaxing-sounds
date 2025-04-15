@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { View, Text, StyleSheet, Image } from "react-native"
+import { useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useAuth } from "@/components/auth-provider"
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/button"
@@ -10,6 +10,7 @@ export default function LoginScreen() {
   const { signInWithGoogle, isLoading } = useAuth()
   const { theme } = useTheme()
   const [error, setError] = useState<string | null>(null)
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
@@ -46,19 +47,38 @@ export default function LoginScreen() {
         transition={{ type: "timing", duration: 800, delay: 600 }}
         style={styles.buttonContainer}
       >
-        <Button
-          onPress={handleGoogleLogin}
-          style={[styles.googleButton, { backgroundColor: theme.colors.card }]}
-          textStyle={{ color: theme.colors.text }}
-          icon={<GoogleIcon />}
-          loading={isLoading}
-        >
-          {isLoading ? "Carregando" : "Entrar com Google"}
-        </Button>
+        <View style={styles.termsContainer}>
+          <TouchableOpacity onPress={() => setAgreedToTerms(!agreedToTerms)} style={styles.checkboxContainer}>
+            <View style={[styles.checkbox, { backgroundColor: agreedToTerms ? theme.colors.primary : theme.colors.card }]}>
+              {agreedToTerms && <View style={styles.checkboxIndicator} />}
+            </View>
+            <Text style={[styles.termsText, { color: theme.colors.textMuted }]}>
+              Eu concordo com os Termos de Serviço e Política de Privacidade
+            </Text>
+          </TouchableOpacity>
+        </View>
+          <Button
+            onPress={handleGoogleLogin}
+            style={[
+              styles.googleButton,
+              { 
+                backgroundColor: agreedToTerms ? theme.colors.primary : theme.colors.card,
+                opacity: agreedToTerms ? 1 : 0.5,
+              },
+            ]}
+            textStyle={{ color: agreedToTerms ? theme.colors.card : theme.colors.text }}
+            icon={<GoogleIcon />}
+            loading={isLoading}
+            disabled={!agreedToTerms || isLoading}
+          >
+            {isLoading ? "Carregando" : "Entrar com Google"}
+          </Button>
 
         {error && <Text style={[styles.errorText, { color: theme.colors.error }]}>{error}</Text>}
       </MotiView>
 
+          {/*
+      // TODO: adicionar uma checkbox para confirmar que o usuário concorda com os termos e condições
       <MotiView
         from={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -69,6 +89,7 @@ export default function LoginScreen() {
           Ao fazer login, você concorda com nossos Termos de Serviço e Política de Privacidade.
         </Text>
       </MotiView>
+            */}
     </View>
   )
 }
@@ -123,4 +144,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: " Inter_400Regular",
   },
-})
+    termsContainer: {
+      marginBottom: 20,
+    },
+    checkboxContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: "#ccc",
+      marginRight: 10,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    checkboxIndicator: {
+      width: 12,
+      height: 12,
+      borderRadius: 2,
+      backgroundColor: "#fff",
+    },
+    termsText: {
+      fontSize: 14,
+      fontFamily: " Inter_400Regular",
+      flex: 1,
+      color: "#ccc",
+    },
+});

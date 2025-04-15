@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Alert } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
@@ -30,6 +28,7 @@ export default function MixPlayerScreen() {
     isLoopEnabled,
     timeRemaining,
     timerActive,
+    
   } = useAudioPlayer()
 
   const [mix, setMix] = useState<SoundMix | null>(null)
@@ -38,6 +37,7 @@ export default function MixPlayerScreen() {
   const [isDownloading, setIsDownloading] = useState(false)
 
   const rotationAnim = useRef(new Animated.Value(0)).current
+  const isMounted = useRef(false)
 
   // Parse mix from params
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function MixPlayerScreen() {
         const parsedMix = JSON.parse(params.mix as string) as SoundMix
         setMix(parsedMix)
 
-        // Iniciar a reprodução do mix automaticamente
+        // Iniciar a pré-visualização do mix automaticamente
         playMix(parsedMix)
       } catch (error) {
         console.error("Error parsing mix:", error)
@@ -55,9 +55,19 @@ export default function MixPlayerScreen() {
     }
 
     return () => {
-      // Não parar o mix ao sair da tela, permitindo reprodução em background
+      // Para a previsualização quando sair da tela
+      stopMix()
     }
   }, [params.mix])
+
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true
+    } else if (mix && isPlaying) {
+      // Se o componente já foi montado e está tocando, toca o mix completo
+      playMix(mix)
+    }
+  }, [isPlaying, mix])
 
   // Animation for playing state
   useEffect(() => {
@@ -68,8 +78,10 @@ export default function MixPlayerScreen() {
           duration: 10000,
           useNativeDriver: true,
         }),
-      ).start()
-    } else {
+      ).start(() => {
+        rotationAnim.setValue(0)
+      })
+    } else if (mix) {
       rotationAnim.stopAnimation()
     }
   }, [isPlaying])
@@ -78,6 +90,7 @@ export default function MixPlayerScreen() {
     if (!mix) return
 
     if (isPlaying) {
+      
       pauseMix()
     } else {
       resumeMix()
@@ -94,26 +107,21 @@ export default function MixPlayerScreen() {
   }
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const remainingSeconds = seconds % 60
+
+    const formattedHours = hours > 0 ? `${hours}:` : ""
+    const formattedMinutes = `${minutes.toString().padStart(2, "0")}:`
+    const formattedSeconds = remainingSeconds.toString().padStart(2, "0")
+
+    return `${formattedHours}${formattedMinutes}${formattedSeconds}`
   }
 
   const downloadMix = async () => {
     if (!mix) return
-
     try {
-      // Solicitar permissão para acessar a biblioteca de mídia
       const { status } = await MediaLibrary.requestPermissionsAsync()
-
-      if (status !== "granted") {
-        Alert.alert("Erro", "Precisamos de permissão para salvar o mixer no seu dispositivo")
-        return
-      }
-
-      setIsDownloading(true)
-      setDownloadProgress(0)
-
       // Em uma implementação real, aqui você faria a exportação do áudio
       // Isso é apenas uma simulação
       for (let i = 0; i <= 100; i += 10) {
@@ -121,28 +129,21 @@ export default function MixPlayerScreen() {
         await new Promise((resolve) => setTimeout(resolve, 200))
       }
 
-      // Simulação de download concluído
-      const fileUri = FileSystem.documentDirectory + `${mix.name.replace(/\s+/g, "_")}.mp3`
+      if (status === "granted") {
+        setIsDownloading(true)
+        const fileUri = FileSystem.documentDirectory + `${mix.name.replace(/\s+/g, "_")}.mp3`
 
-      console.log({ fileUri });
-      
-
-      // Em uma implementação real, você criaria um arquivo de áudio real
-      // Aqui estamos apenas simulando
-
-      // Salvar na biblioteca de mídia
-      const asset = await MediaLibrary.createAssetAsync(fileUri)
-      await MediaLibrary.createAlbumAsync("Relaxing Sounds", asset, false)
-
-      setIsDownloading(false)
-      setDownloadProgress(0)
-
-      // Compartilhar o arquivo
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri)
-      }
-
-      Alert.alert("Sucesso", `Mixer "${mix.name}" salvo com sucesso!`)
+        // Em uma implementação real, você criaria um arquivo de áudio real
+        const asset = await MediaLibrary.createAssetAsync(fileUri)
+        await MediaLibrary.createAlbumAsync("Relaxing Sounds", asset, false)
+        setIsDownloading(false)
+        setDownloadProgress(0)
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri)
+        }
+        Alert.alert("Sucesso", `Mixer "${mix.name}" salvo com sucesso!`)
+      } else
+        Alert.alert("Erro", "Precisamos de permissão para salvar o mixer no seu dispositivo")
     } catch (error) {
       console.error("Erro ao baixar mixer:", error)
       setIsDownloading(false)
@@ -178,7 +179,7 @@ export default function MixPlayerScreen() {
           style={[
             styles.albumArt,
             {
-              backgroundColor: theme.colors.card,
+              backgroundColor: isPlaying ? theme.colors.card : theme.colors.card,
               borderColor: theme.colors.primary,
               transform: [{ rotate: spin }],
             },

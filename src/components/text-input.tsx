@@ -1,6 +1,7 @@
 
-import { TextInput as RNTextInput, StyleSheet, type TextInputProps, View, Text } from "react-native"
-import { useTheme } from "./theme-provider"
+import { TextInput as RNTextInput, StyleSheet, type TextInputProps, View, Text } from "react-native";
+import { useTheme } from "./theme-provider";
+import React from "react";
 
 interface CustomTextInputProps extends TextInputProps {
   label?: string
@@ -31,7 +32,7 @@ export function TextInput({ label, error, style, ...props }: CustomTextInputProp
   )
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<{ [key: string]: any }>({
   container: {
     minHeight: 50
   },
@@ -53,4 +54,6 @@ const styles = StyleSheet.create({
     fontFamily: " Inter_400Regular",
     marginTop: 4,
   },
-})
+});
+
+export default React.memo(TextInput);

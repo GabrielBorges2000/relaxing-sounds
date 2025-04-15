@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState, useEffect, useRef, createContext, useContext } from "react"
+import { useState, useEffect, useRef, createContext, useContext, useCallback } from "react"
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av"
 import { AppState } from "react-native"
 import * as Notifications from "expo-notifications"
@@ -28,6 +28,8 @@ interface AudioPlayerContextType {
   stopMix: () => Promise<void>
   toggleLoop: () => Promise<void>
   setTimer: (minutes: number) => void
+  playPreview: (mix: SoundMix) => Promise<void>
+  stopPreview: () => Promise<void>
 }
 
 const AudioPlayerContext = createContext<AudioPlayerContextType>({
@@ -43,6 +45,8 @@ const AudioPlayerContext = createContext<AudioPlayerContextType>({
   stopMix: async () => { },
   toggleLoop: async () => { },
   setTimer: () => { },
+  playPreview: async () => {},
+  stopPreview: async () => {},
 })
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -54,6 +58,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [isLoopEnabled, setIsLoopEnabled] = useState(true)
   const [timerMinutes, setTimerMinutes] = useState(0)
   const [timerActive, setTimerActive] = useState(false)
+  const [isPreviewing, setIsPreviewing] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(0)
 
   const appState = useRef(AppState.currentState)
@@ -165,7 +170,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }
 
-  const playMix = async (mix: SoundMix) => {
+  const playMix = useCallback(async (mix: SoundMix) => {
     if (isLoading) return
 
     try {
@@ -229,12 +234,12 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       if (appState.current !== "active") {
         createPlayerNotification()
       }
-    } catch (error) {
+    } catch (error)  {
       console.error("Error playing mix:", error)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [isLoading, currentMix, sounds, isLoopEnabled, appState])
 
   const pauseMix = async () => {
     try {
@@ -275,7 +280,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }
 
-  const stopCurrentSounds = async () => {
+  const stopCurrentSounds = useCallback(async () => {
     try {
       for (const soundId in activeSounds) {
         const sound = activeSounds[soundId]
@@ -288,7 +293,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error("Error stopping current sounds:", error)
     }
-  }
+  }, [activeSounds])
 
   const stopMix = async () => {
     try {
@@ -329,6 +334,75 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }
 
+  const playPreview = useCallback(async (mix: SoundMix) => {
+    if (isLoading || isPreviewing) return
+    try {
+      setIsLoading(true)
+      setIsPreviewing(true)
+
+      // Parar qualquer som que esteja tocando, incluindo mixes completos
+      await stopCurrentSounds()
+
+      // Configurar áudio para reprodução em segundo plano
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+        shouldDuckAndroid: true,
+        interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+        playThroughEarpieceAndroid: false,
+        interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+      })
+
+      const newActiveSounds: Record<string, Audio.Sound | null> = {}
+
+      // Carregar cada som do mix para pré-visualização
+      for (const soundItem of mix.sounds) {
+        const soundData = sounds.find((s) => s.id === soundItem.id)
+        if (soundData) {
+          try {
+            const { sound } = await Audio.Sound.createAsync(soundData.source, {
+              isLooping: true, // Pré-visualização sempre em loop
+              volume: soundItem.volume,
+              shouldPlay: false,
+              progressUpdateIntervalMillis: 100,
+            })
+            newActiveSounds[soundItem.id] = sound
+          } catch (error) {
+            console.error(`Erro ao carregar som ${soundItem.id} para pré-visualização:`, error)
+          }
+        }
+      }
+
+      setActiveSounds(newActiveSounds)
+
+      // Tocar todos os sons carregados
+      for (const soundId in newActiveSounds) {
+        const sound = newActiveSounds[soundId]
+        if (sound) {
+          try {
+            await sound.playAsync()
+          } catch (error) {
+            console.error(`Erro ao tocar som ${soundId} na pré-visualização:`, error)
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao iniciar pré-visualização:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isLoading, isPreviewing, sounds])
+
+  const stopPreview = useCallback(async () => {
+    try {
+      await stopCurrentSounds()
+      setIsPreviewing(false)
+    } catch (error) {
+      console.error("Erro ao parar pré-visualização:", error)
+    }
+  }, [])
+
+
   const setTimer = (minutes: number) => {
     if (minutes === 0) {
       // Desativar timer
@@ -360,6 +434,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         stopMix,
         toggleLoop,
         setTimer,
+        playPreview,
+        stopPreview,
       }}
     >
       {children}

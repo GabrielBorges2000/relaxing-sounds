@@ -1,6 +1,6 @@
 
 
-import type React from "react"
+import React, { type ReactNode } from "react"
 import {
   TouchableOpacity,
   Text,
@@ -11,38 +11,45 @@ import {
   type TextStyle,
 } from "react-native"
 import { useTheme } from "./theme-provider"
+import { Inter_500Medium } from "@expo-google-fonts/inter"
 
 interface ButtonProps {
-  children: React.ReactNode
+  children: ReactNode
   onPress: () => void
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
-  icon?: React.ReactNode
+  icon?: ReactNode
   loading?: boolean
   disabled?: boolean
 }
 
-export function Button({ children, onPress, style, textStyle, icon, loading = false, disabled = false }: ButtonProps) {
-  const { theme } = useTheme()
+const _Button: React.FC<ButtonProps> = ({
+  children,
+  onPress,
+  style,
+  textStyle,
+  icon,
+  loading = false,
+  disabled = false,
+}) => {
+  const { theme } = useTheme();
 
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: theme.colors.primary }, disabled && { opacity: 0.6 }, style]}
+      style={[styles.button, { backgroundColor: theme.colors.primary }, disabled && styles.disabled, style]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.8}
-    >
-      {loading ? (
-        <ActivityIndicator color={theme.colors.buttonText} size="small" />
-      ) : (
-        <>
-          {icon && <Text style={styles.icon}>{icon}</Text>}
-          <Text style={[styles.text, { color: theme.colors.buttonText }, textStyle]}>{children}</Text>
-        </>
-      )}
+      activeOpacity={0.8}>
+      {loading ? <ActivityIndicator color={theme.colors.buttonText} size="small" /> : (
+        <> {icon && <Text style={styles.icon}>{icon}</Text>}
+          <Text style={[styles.text, { color: theme.colors.buttonText }, textStyle]}>
+            {children}</Text> </>)
+      }
     </TouchableOpacity>
-  )
-}
+  );
+};
+
+export const Button = React.memo(_Button)
 
 const styles = StyleSheet.create({
   button: {
@@ -53,12 +60,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
   },
+  disabled: {
+    opacity: 0.6,
+  },
   text: {
     fontSize: 16,
     fontFamily: "Inter_500Medium",
     textAlign: "center",
   },
-  icon: {
-    marginRight: 8,
+  icon: { marginRight: 8, 
   },
 })

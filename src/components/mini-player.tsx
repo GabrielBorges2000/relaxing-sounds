@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
 import { useTheme } from "./theme-provider"
 import { PlayIcon, PauseIcon, XIcon } from "./icons"
 import { MotiView } from "moti"
@@ -13,16 +13,12 @@ interface MiniPlayerProps {
   onPress: () => void
 }
 
-export function MiniPlayer({ mix, isPlaying, onPlay, onPause, onStop, onPress }: MiniPlayerProps) {
+function MiniPlayerComponent({ mix, isPlaying, onPlay, onPause, onStop, onPress }: MiniPlayerProps) {
   const { theme } = useTheme()
 
   return (
     <MotiView
-      from={{ translateY: 50, opacity: 0 }}
-      animate={{ translateY: 0, opacity: 1 }}
-      transition={{ type: "timing", duration: 300 }}
       style={[
-        styles.container,
         {
           backgroundColor: theme.colors.card,
           borderTopColor: theme.colors.border,
@@ -30,8 +26,7 @@ export function MiniPlayer({ mix, isPlaying, onPlay, onPause, onStop, onPress }:
       ]}
     >
       <TouchableOpacity style={styles.infoContainer} onPress={onPress}>
-        <View style={[styles.mixIndicator, { backgroundColor: theme.colors.primary }]} />
-        <Text style={[styles.mixName, { color: theme.colors.text }]} numberOfLines={1}>
+        <Text style={{ color: theme.colors.text }} numberOfLines={1}>
           {mix.name}
         </Text>
       </TouchableOpacity>

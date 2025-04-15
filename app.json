@@ -17,7 +17,7 @@
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#6366f1"
       },
-      "package": "com.codeborges.relaxingsounds.ios",
+      "package": "com.codeborges.relaxingsounds.android",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
@@ -27,7 +27,7 @@
       ]
     },
     "ios": {
-      "bundleIdentifier": "com.codeborges.relaxingsounds.android",
+      "bundleIdentifier": "com.codeborges.relaxingsounds.ios",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }
