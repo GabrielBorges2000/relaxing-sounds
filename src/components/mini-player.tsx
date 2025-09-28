@@ -1,19 +1,22 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native"
 import { useTheme } from "./theme-provider"
 import { PlayIcon, PauseIcon, XIcon } from "./icons"
 import { MotiView } from "moti"
 import type { SoundMix } from "@/types"
+import { isLoading } from "expo-font"
 
 interface MiniPlayerProps {
   mix: SoundMix
   isPlaying: boolean
+  isLoading: boolean
   onPlay: () => void
   onPause: () => void
   onStop: () => void
   onPress: () => void
 }
 
-function MiniPlayerComponent({ mix, isPlaying, onPlay, onPause, onStop, onPress }: MiniPlayerProps) {
+
+export function MiniPlayer({ mix, isPlaying, onPlay, onPause, onStop, onPress, isLoading }: MiniPlayerProps) {
   const { theme } = useTheme()
 
   return (
@@ -26,20 +29,27 @@ function MiniPlayerComponent({ mix, isPlaying, onPlay, onPause, onStop, onPress 
       ]}
     >
       <TouchableOpacity style={styles.infoContainer} onPress={onPress}>
-        <Text style={{ color: theme.colors.text }} numberOfLines={1}>
-          {mix.name}
-        </Text>
+        <View style={styles.infoContent}>
+          <Text style={{ color: theme.colors.text }} numberOfLines={1}>
+            {mix.name}
+          </Text>
+        </View>
       </TouchableOpacity>
 
       <View style={styles.controls}>
-        <TouchableOpacity style={styles.controlButton} onPress={isPlaying ? onPause : onPlay}>
-          {isPlaying ? (
-            <PauseIcon color={theme.colors.primary} size={24} />
-          ) : (
-            <PlayIcon color={theme.colors.primary} size={24} />
-          )}
-        </TouchableOpacity>
+        {isLoading ? (
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+        ) : (
+          <TouchableOpacity style={styles.controlButton} onPress={isPlaying ? onPause : onPlay}>
 
+            {isPlaying ? (
+              <PauseIcon color={theme.colors.primary} size={24} />
+            ) : (
+              <PlayIcon color={theme.colors.primary} size={24} />
+            )}
+          </TouchableOpacity>
+
+        )}
         <TouchableOpacity style={styles.controlButton} onPress={onStop}>
           <XIcon color={theme.colors.error} size={24} />
         </TouchableOpacity>
@@ -63,11 +73,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  mixIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 12,
+  infoContent: {
+    flex: 1,
+    marginLeft: 10,
   },
   mixName: {
     fontSize: 16,

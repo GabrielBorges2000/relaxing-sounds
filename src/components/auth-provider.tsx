@@ -4,6 +4,7 @@ import React, { memo } from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import * as WebBrowser from "expo-web-browser"
 import * as SecureStore from "expo-secure-store"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { GoogleSignin, User, isSuccessResponse } from "@react-native-google-signin/google-signin"
 
 // Registrar o redirecionamento para autenticação
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loadStoredAuth = async () => {
     try {
       setIsLoading(true)
-      const storedUser = await SecureStore.getItemAsync(USER_KEY)
+      const storedUser = await AsyncStorage.getItem(USER_KEY)
 
       if (storedUser) {
         setUser(JSON.parse(storedUser))
@@ -66,24 +67,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInWithGoogle = async () => {
     try {
       await GoogleSignin.hasPlayServices()
-      const response = await GoogleSignin.signIn()     
-      
+      const response = await GoogleSignin.signIn()
+
       if (isSuccessResponse(response)) {
-        console.log(response);
         setUser(response.data);
+        await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.data))
+
       }
 
     } catch (error) {
       console.log("Error signing in with Google:", error)
       throw error
-    }    
+    }
   }
 
   // Sign out
   const signOut = async () => {
     try {
       setIsLoading(true)
-      await SecureStore.deleteItemAsync(USER_KEY)
+      await AsyncStorage.removeItem(USER_KEY)
       setUser(null)
     } catch (error) {
       console.error("Error signing out:", error)

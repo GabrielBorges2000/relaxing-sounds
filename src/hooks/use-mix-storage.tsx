@@ -92,5 +92,7 @@ export function useMixStorage() {
     saveMix,
     deleteMix,
     isLoading,
+    createMix,
+    getMixes
   }
 }

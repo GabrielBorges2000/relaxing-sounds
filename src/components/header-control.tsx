@@ -1,4 +1,5 @@
-import { memo, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { TextInput } from "./text-input";
 import { TimerIcon } from "./icons";
 import { useTheme } from "./theme-provider";
@@ -49,7 +50,7 @@ export function HeaderControl({
   )
 }
 
-export default memo(HeaderControl);
+export default React.memo(HeaderControl);
 
 const styles = StyleSheet.create({
   header: {
@@ -79,5 +80,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
+  },
+  timerIndicator: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "red",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timerText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
   },
 })

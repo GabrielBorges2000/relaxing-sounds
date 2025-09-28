@@ -10,7 +10,6 @@ import { AudioPlayerProvider } from "@/hooks/use-audio-player"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { AdBanner } from "@/components/ad-banner"
-import { GoogleSignin } from "@react-native-google-signin/google-signin"
 
 SplashScreen.preventAutoHideAsync()
 
@@ -29,12 +28,13 @@ function LayoutWithProviders() {
   useEffect(() => {
     if (fontsLoaded && !isLoading) {
       const inAuthGroup = segments[0] === "auth"
-      
-      router.replace("/")
-      // if (!user && !inAuthGroup) {
-      //   router.replace("/auth/login")
-      // } else if (user && inAuthGroup) {
-      // }
+
+      if (user && inAuthGroup) {
+        router.replace("/(home)")
+      }
+      if (!user && !inAuthGroup) {
+        router.replace("/auth/login")
+      }
 
       SplashScreen.hideAsync()
     }

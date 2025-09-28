@@ -9,9 +9,9 @@ import {
   type StyleProp,
   type ViewStyle,
   type TextStyle,
+  View,
 } from "react-native"
 import { useTheme } from "./theme-provider"
-import { Inter_500Medium } from "@expo-google-fonts/inter"
 
 interface ButtonProps {
   children: ReactNode
@@ -41,9 +41,12 @@ const _Button: React.FC<ButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={0.8}>
       {loading ? <ActivityIndicator color={theme.colors.buttonText} size="small" /> : (
-        <> {icon && <Text style={styles.icon}>{icon}</Text>}
+        <>
+          {icon && <View style={styles.icon}>{icon}</View>}
           <Text style={[styles.text, { color: theme.colors.buttonText }, textStyle]}>
-            {children}</Text> </>)
+            {children}
+          </Text>
+        </>)
       }
     </TouchableOpacity>
   );

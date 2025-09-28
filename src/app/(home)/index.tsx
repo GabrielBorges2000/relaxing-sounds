@@ -14,26 +14,24 @@ import { TimerModal } from "@/components/timer-modal"
 import { AnimatedBackground } from "@/components/animated-background"
 import { MiniPlayer } from "@/components/mini-player"
 import { MotiView } from "moti"
-import { useAuth } from "@/components/auth-provider"
 import { Header } from "@/components/header"
 import { HeaderControl } from "@/components/header-control"
-import { Volume, Volume1, Volume2 } from 'lucide-react-native'
+import { PauseIcon, Volume, Volume1, Volume2 } from 'lucide-react-native'
 
 export default function MixCreator() {
   const { sounds, isLoading } = useSoundLibrary()
   const { saveMix } = useMixStorage()
-  const { currentMix, isPlaying, playMix, pauseMix, stopMix } = useAudioPlayer()
+  const { currentMix, isPlaying, playMix, pauseMix, stopMix, timerMinutes, setTimerMinutes, setTimerActive, timerActive } = useAudioPlayer()
   const router = useRouter()
   const { theme } = useTheme()
-  const { user } = useAuth()
   const [activeSounds, setActiveSounds] = useState<Record<string, Audio.Sound | null>>({})
   const [volumes, setVolumes] = useState<Record<string, number>>({})
   const [mixName, setMixName] = useState("Meu Mix Relaxante")
   const [timerModalVisible, setTimerModalVisible] = useState(false)
-  const [timerMinutes, setTimerMinutes] = useState(0)
-  const [timerActive, setTimerActive] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
   const [uploadModalVisible, setUploadModalVisible] = useState(false)
+  const [soundStatus, setSoundStatus] = useState<Record<string, boolean>>({})
+
 
   const appState = useRef(AppState.currentState)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -136,17 +134,16 @@ export default function MixCreator() {
       if (status.isLoaded) {
         if (status.isPlaying) {
           await sound.pauseAsync()
-
-          // Se todos os sons estiverem pausados, sair do modo de preview
+          setSoundStatus((prev) => ({ ...prev, [soundId]: false }))
           const allPaused = await checkAllSoundsPaused()
-          if (allPaused) {
-            setPreviewMode(false)
-          }
+          if (allPaused) setPreviewMode(false)
         } else {
           await sound.playAsync()
+          setSoundStatus((prev) => ({ ...prev, [soundId]: true }))
           setPreviewMode(true)
         }
       }
+
     } catch (error) {
       console.error("Error toggling sound:", error)
     }
@@ -173,6 +170,7 @@ export default function MixCreator() {
 
     try {
       const sound = activeSounds[soundId]
+
       if (sound) {
         await sound.setVolumeAsync(value)
 
@@ -234,26 +232,26 @@ export default function MixCreator() {
     Alert.alert("Sucesso", "Mix salvo com sucesso!")
   }
 
-    const handlePlayMix = () => {
-        if (currentMix && isPlaying) {
-            stopMix();
-        }
+  const handlePlayMix = () => {
+    if (currentMix && isPlaying) {
+      stopMix();
+    }
 
-        stopAllSounds();
+    stopAllSounds();
 
-        const activeSoundIds = Object.entries(volumes)
-            .filter(([_, volume]) => volume > 0)
-            .map(([id, volume]) => ({id, volume}));
+    const activeSoundIds = Object.entries(volumes)
+      .filter(([_, volume]) => volume > 0)
+      .map(([id, volume]) => ({ id, volume }));
 
-        if (activeSoundIds.length === 0) {
-            Alert.alert("Erro", "Adicione pelo menos um som ao seu mix");
-            return;
-        }
+    if (activeSoundIds.length === 0) {
+      Alert.alert("Erro", "Adicione pelo menos um som ao seu mix");
+      return;
+    }
 
-        const mix: SoundMix = {id: "temp", name: mixName, sounds: activeSoundIds, createdAt: new Date().toISOString()};
+    const mix: SoundMix = { id: "temp", name: mixName, sounds: activeSoundIds, createdAt: new Date().toISOString() };
 
-        router.push({pathname: "/mix/player", params: {mix: JSON.stringify(mix)}});
-    };
+    router.push({ pathname: "/mix/player", params: { mix: JSON.stringify(mix) } });
+  };
 
 
   const handleUploadMix = () => {
@@ -304,6 +302,7 @@ export default function MixCreator() {
     return <Volume2 color={theme.colors.text} />
   }
 
+  console.log({ currentMix })
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -333,8 +332,17 @@ export default function MixCreator() {
             transition={{ type: "timing", duration: 500, delay: sounds.indexOf(sound) * 100 }}
             style={[styles.soundCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
           >
-            <TouchableOpacity style={styles.soundHeader} onPress={() => toggleSound(sound.id)}>
-              <Text style={[styles.soundName, { color: theme.colors.text }]}>{sound.name}</Text>
+            <View style={styles.soundHeader} >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <TouchableOpacity onPress={() => toggleSound(sound.id)}>
+                  {soundStatus[sound.id] ? (
+                    <PauseIcon color={theme.colors.primary} size={24} />
+                  ) : (
+                    <PlayIcon color={theme.colors.primary} size={24} />
+                  )}
+                </TouchableOpacity>
+                <Text style={[styles.soundName, { color: theme.colors.text }]}>{sound.name}</Text>
+              </View>
               <View
                 style={[
                   styles.soundIndicator,
@@ -343,7 +351,7 @@ export default function MixCreator() {
                   },
                 ]}
               />
-            </TouchableOpacity>
+            </View>
 
             <View style={{ flexDirection: 'row', alignItems: "center", width: "95%" }}>
               <VolumeIcon volume={volumes[sound.id] || 0} />
@@ -388,6 +396,7 @@ export default function MixCreator() {
         <MiniPlayer
           mix={currentMix}
           isPlaying={isPlaying}
+          isLoading
           onPlay={() => playMix(currentMix)}
           onPause={pauseMix}
           onStop={stopMix}
@@ -400,15 +409,12 @@ export default function MixCreator() {
         />
       )}
 
-
-
       <TimerModal
         visible={timerModalVisible}
         onClose={() => setTimerModalVisible(false)}
         onSelectTimer={startTimer}
         customMinutes={true}
       />
-
 
     </View>
   )

@@ -6,7 +6,7 @@ import { useRouter } from "expo-router"
 import { useTheme } from "@/components/theme-provider"
 import { useMixStorage } from "@/hooks/use-mix-storage"
 import type { SoundMix } from "@/types"
-import { PlayIcon, DeleteIcon, CloudIcon, CloudOffIcon, ShareIcon } from "@/components/icons"
+import { PlayIcon, DeleteIcon, CloudIcon, CloudOffIcon, ShareIcon, BackIcon } from "@/components/icons"
 import { MotiView } from "moti"
 import { formatDate } from "@/utils/date"
 import { useSyncMixes } from "@/hooks/use-sync-mixes"
@@ -160,9 +160,14 @@ export default function SavedMixesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <BackIcon color={theme.colors.text} />
+        </TouchableOpacity>
         <Text style={[styles.title, { color: theme.colors.text }]}>Seus Mixers Salvos</Text>
         {isSyncing && <Text style={[styles.syncingText, { color: theme.colors.primary }]}>Sincronizando...</Text>}
+        <View style={styles.placeholder} />
       </View>
+
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -200,15 +205,24 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
     paddingTop: 20,
-    zIndex: 2,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
-    fontSize: 24,
-    fontFamily: " Inter_700Bold",
+    fontSize: 18,
+    fontFamily: "Inter_500Medium",
+  },
+  placeholder: {
+    width: 30,
   },
   syncingText: {
     fontSize: 14,

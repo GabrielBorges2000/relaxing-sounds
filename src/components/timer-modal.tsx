@@ -61,86 +61,86 @@ export const TimerModal = React.memo(function TimerModal({ visible, onClose, onS
             exit={{ opacity: 0, scale: 0.9 }}
             style={[styles.modalContent, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
           >
-              <View style={styles.header}>
-                  <View style={styles.titleContainer}> djskdjk
-                      <ClockIcon color={theme.colors.primary} />
-                      <Text style={[styles.title, { color: theme.colors.text }]}>Definir Temporizador</Text>
-                  </View>
-                  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                      <XIcon color={theme.colors.text} />
-                  </TouchableOpacity>
+            <View style={styles.header}>
+              <View style={styles.titleContainer}>
+                <ClockIcon color={theme.colors.primary} />
+                <Text style={[styles.title, { color: theme.colors.text }]}>Definir Temporizador</Text>
               </View>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <XIcon color={theme.colors.text} />
+              </TouchableOpacity>
+            </View>
 
-              <View style={styles.optionsContainer}>
-                  {timerOptions.map((option, index) => (
-                      <MotiView
-                          key={option.value}
-                          from={{ opacity: 0, translateY: 10 }}
-                          animate={{ opacity: 1, translateY: 0 }}
-                          transition={{ delay: index * 50 }}
-                      >
-                          <TouchableOpacity
-                              style={[styles.optionButton, { borderColor: theme.colors.border }]}
-                              onPress={() => onSelectTimer(option.value)}
-                          >
-                              <Text style={[styles.optionText, { color: theme.colors.text }]}>{option.label}</Text>
-                          </TouchableOpacity>
-                      </MotiView>
-                  ))}
-
-                  {customMinutes && (
-                      <MotiView
-                          from={{ opacity: 0, translateY: 10 }}
-                          animate={{ opacity: 1, translateY: 0 }}
-                          transition={{ delay: timerOptions.length * 50 }}
-                          style={styles.customTimeContainer}
-                      >
-                          <TextInput
-                              style={[
-                                  styles.customTimeInput,
-                                  {
-                                      color: theme.colors.text,
-                                      borderColor: theme.colors.border,
-                                      backgroundColor: theme.colors.background,
-                                  },
-                              ]}
-                              placeholder="Tempo personalizado (min)"
-                              placeholderTextColor={theme.colors.textMuted}
-                              keyboardType="number-pad"
-                              value={customTime}
-                              onChangeText={setCustomTime}
-                              maxLength={3}
-                              returnKeyType="done"
-                              onSubmitEditing={handleCustomTimeSubmit}
-                          />
-                          <TouchableOpacity
-                              style={[styles.customTimeButton, { backgroundColor: theme.colors.primary }]}
-                              onPress={handleCustomTimeSubmit}
-                          >
-                              <Text style={[styles.customTimeButtonText, { color: theme.colors.buttonText }]}>Definir</Text>
-                          </TouchableOpacity>
-                      </MotiView>
-                  )}
-
-                  <MotiView
-                      from={{ opacity: 0, translateY: 10 }}
-                      animate={{ opacity: 1, translateY: 0 }}
-                      transition={{ delay: (timerOptions.length + 1) * 50 }}
+            <View style={styles.optionsContainer}>
+              {timerOptions.map((option, index) => (
+                <MotiView
+                  key={option.value}
+                  from={{ opacity: 0, translateY: 10 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{ delay: index * 50 }}
+                >
+                  <TouchableOpacity
+                    style={[styles.optionButton, { borderColor: theme.colors.border }]}
+                    onPress={() => onSelectTimer(option.value)}
                   >
-                      <TouchableOpacity
-                          style={[
-                              styles.optionButton,
-                              {
-                                  borderColor: theme.colors.border,
-                                  backgroundColor: theme.colors.error,
-                              },
-                          ]}
-                          onPress={() => onSelectTimer(0)}
-                      >
-                          <Text style={[styles.optionText, { color: theme.colors.buttonText }]}>Desativar Timer</Text>
-                      </TouchableOpacity>
-                  </MotiView>
-              </View>
+                    <Text style={[styles.optionText, { color: theme.colors.text }]}>{option.label}</Text>
+                  </TouchableOpacity>
+                </MotiView>
+              ))}
+
+              {customMinutes && (
+                <MotiView
+                  from={{ opacity: 0, translateY: 10 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{ delay: timerOptions.length * 50 }}
+                  style={styles.customTimeContainer}
+                >
+                  <TextInput
+                    style={[
+                      styles.customTimeInput,
+                      {
+                        color: theme.colors.text,
+                        borderColor: theme.colors.border,
+                        backgroundColor: theme.colors.background,
+                      },
+                    ]}
+                    placeholder="Tempo personalizado (min)"
+                    placeholderTextColor={theme.colors.textMuted}
+                    keyboardType="number-pad"
+                    value={customTime}
+                    onChangeText={setCustomTime}
+                    maxLength={3}
+                    returnKeyType="done"
+                    onSubmitEditing={handleCustomTimeSubmit}
+                  />
+                  <TouchableOpacity
+                    style={[styles.customTimeButton, { backgroundColor: theme.colors.primary }]}
+                    onPress={handleCustomTimeSubmit}
+                  >
+                    <Text style={[styles.customTimeButtonText, { color: theme.colors.buttonText }]}>Definir</Text>
+                  </TouchableOpacity>
+                </MotiView>
+              )}
+
+              <MotiView
+                from={{ opacity: 0, translateY: 10 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{ delay: (timerOptions.length + 1) * 50 }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.optionButton,
+                    {
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.error,
+                    },
+                  ]}
+                  onPress={() => onSelectTimer(0)}
+                >
+                  <Text style={[styles.optionText, { color: theme.colors.buttonText }]}>Desativar Timer</Text>
+                </TouchableOpacity>
+              </MotiView>
+            </View>
           </MotiView>
         </View>
       </TouchableWithoutFeedback>
@@ -186,11 +186,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    alignItems: "center",
+    borderWidth: 1,
   },
   optionText: {
     fontSize: 16,
     fontFamily: " Inter_400Regular",
+    textAlign: "center"
   },
   customTimeContainer: {
     flexDirection: "row",
@@ -203,6 +204,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     fontSize: 14,
     fontFamily: "Inter_400Regular",
+    flex: 1
   },
   customTimeButton: {
     height: 44,

@@ -30,6 +30,9 @@
       "bundleIdentifier": "com.codeborges.relaxingsounds.ios",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "web": {
@@ -39,7 +42,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+        }
+      ],
       [
         "expo-av",
         {

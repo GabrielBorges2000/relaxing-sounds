@@ -16,7 +16,6 @@ export default function MixPlayerScreen() {
   const params = useLocalSearchParams()
   const router = useRouter()
   const { theme } = useTheme()
-  const { sounds } = useSoundLibrary()
   const {
     playMix,
     pauseMix,
@@ -28,7 +27,6 @@ export default function MixPlayerScreen() {
     isLoopEnabled,
     timeRemaining,
     timerActive,
-    
   } = useAudioPlayer()
 
   const [mix, setMix] = useState<SoundMix | null>(null)
@@ -47,7 +45,7 @@ export default function MixPlayerScreen() {
         setMix(parsedMix)
 
         // Iniciar a pré-visualização do mix automaticamente
-        playMix(parsedMix)
+
       } catch (error) {
         console.error("Error parsing mix:", error)
         router.back()
@@ -55,7 +53,7 @@ export default function MixPlayerScreen() {
     }
 
     return () => {
-      // Para a previsualização quando sair da tela
+      // Para a reproducao quando sair da tela
       stopMix()
     }
   }, [params.mix])
@@ -64,7 +62,7 @@ export default function MixPlayerScreen() {
     if (!isMounted.current) {
       isMounted.current = true
     } else if (mix && isPlaying) {
-      // Se o componente já foi montado e está tocando, toca o mix completo
+      // Se o componente já foi montado e o play foi clicado, toca o mix completo
       playMix(mix)
     }
   }, [isPlaying, mix])
@@ -85,20 +83,22 @@ export default function MixPlayerScreen() {
       rotationAnim.stopAnimation()
     }
   }, [isPlaying])
-
-  const handleTogglePlayPause = () => {
-    if (!mix) return
-
+  useEffect(() => {
+    if (mix) {
+      playMix(mix)
+    }
+  }, [mix])
+  const handleTogglePlayPause = async () => {
     if (isPlaying) {
-      
-      pauseMix()
+      await pauseMix()
     } else {
-      resumeMix()
+      await resumeMix()
     }
   }
 
-  const handleToggleLoop = () => {
-    toggleLoop()
+  const handleToggleLoop = async () => {
+
+    await toggleLoop()
   }
 
   const handleStartTimer = (minutes: number) => {
@@ -370,9 +370,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginHorizontal: 20,
-    marginBottom: 70, // Aumentado para dar espaço ao banner
     paddingVertical: 12,
     borderRadius: 25,
+    display: "none"
   },
   downloadButtonText: {
     marginLeft: 8,

@@ -5,6 +5,7 @@ import { AppState } from "react-native"
 import * as Notifications from "expo-notifications"
 import { useSoundLibrary } from "./use-sound-library"
 import type { SoundMix } from "@/types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 // Configurar notificações
 Notifications.setNotificationHandler({
@@ -22,6 +23,9 @@ interface AudioPlayerContextType {
   timeRemaining: number
   timerActive: boolean
   isLoopEnabled: boolean
+  timerMinutes: number
+  setTimerMinutes: (minute: number) => void
+  setTimerActive: (active: boolean) => void
   playMix: (mix: SoundMix) => Promise<void>
   pauseMix: () => Promise<void>
   resumeMix: () => Promise<void>
@@ -37,16 +41,19 @@ const AudioPlayerContext = createContext<AudioPlayerContextType>({
   isPlaying: false,
   isLoading: false,
   timeRemaining: 0,
-  timerActive: false,
+  timerActive: true,
   isLoopEnabled: true,
+  timerMinutes: 1,
+  setTimerMinutes: async () => { },
+  setTimerActive: async () => { },
   playMix: async () => { },
   pauseMix: async () => { },
   resumeMix: async () => { },
   stopMix: async () => { },
   toggleLoop: async () => { },
   setTimer: () => { },
-  playPreview: async () => {},
-  stopPreview: async () => {},
+  playPreview: async () => { },
+  stopPreview: async () => { },
 })
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -55,9 +62,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [activeSounds, setActiveSounds] = useState<Record<string, Audio.Sound | null>>({})
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [isLoopEnabled, setIsLoopEnabled] = useState(true)
-  const [timerMinutes, setTimerMinutes] = useState(0)
-  const [timerActive, setTimerActive] = useState(false)
+  const [isLoopEnabled, setIsLoopEnabled] = useState(false)
+  const [timerMinutes, setTimerMinutes] = useState(1)
+  const [timerActive, setTimerActive] = useState(true)
   const [isPreviewing, setIsPreviewing] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(0)
 
@@ -170,7 +177,26 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }
 
-  const playMix = useCallback(async (mix: SoundMix) => {
+  useEffect(() => {
+    const loadLastSession = async () => {
+      const savedMix = await AsyncStorage.getItem("lastMix")
+      console.log("Saved Mix (raw):", savedMix)
+
+      if (savedMix) {
+        try {
+          const parsed = JSON.parse(savedMix)
+          console.log("Parsed Mix:", parsed)
+          await playMix(parsed)
+        } catch (e) {
+          console.error("Erro ao parsear mix salvo:", e)
+        }
+      }
+    }
+
+    loadLastSession()
+  }, [])
+
+  const playMix = async (mix: SoundMix) => {
     if (isLoading) return
 
     try {
@@ -227,19 +253,21 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
           }
         }
       }
-
       setIsPlaying(true)
 
       // Criar notificação se o app estiver em background
       if (appState.current !== "active") {
         createPlayerNotification()
       }
-    } catch (error)  {
+
+
+
+    } catch (error) {
       console.error("Error playing mix:", error)
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading, currentMix, sounds, isLoopEnabled, appState])
+  }
 
   const pauseMix = async () => {
     try {
@@ -280,7 +308,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }
 
-  const stopCurrentSounds = useCallback(async () => {
+  const stopCurrentSounds = async () => {
     try {
       for (const soundId in activeSounds) {
         const sound = activeSounds[soundId]
@@ -293,7 +321,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error("Error stopping current sounds:", error)
     }
-  }, [activeSounds])
+  }
 
   const stopMix = async () => {
     try {
@@ -402,7 +430,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [])
 
-
   const setTimer = (minutes: number) => {
     if (minutes === 0) {
       // Desativar timer
@@ -436,6 +463,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         setTimer,
         playPreview,
         stopPreview,
+        setTimerMinutes,
+        timerMinutes,
+        setTimerActive
       }}
     >
       {children}

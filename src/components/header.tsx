@@ -1,12 +1,10 @@
 import React from "react"
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native"
-import { useRouter } from "expo-router"
-import { Audio } from "expo-av"
-import { Slider } from "@/components/slider"
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from "react-native"
 import { useTheme } from "@/components/theme-provider"
 import { ListIcon, UploadIcon, UserIcon } from "@/components/icons"
-
 import { useAuth } from "@/components/auth-provider"
+import { LogOutIcon } from "lucide-react-native"
+import { useRouter } from "expo-router"
 
 interface HeaderProps {
   handleUploadMix: () => void
@@ -18,7 +16,25 @@ export function Header({
   navigateToSavedMixes
 }: HeaderProps) {
   const { theme } = useTheme()
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    Alert.alert("Sair", "Tem certeza que deseja sair da sua conta?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Sair",
+        style: "destructive",
+        onPress: async () => {
+          await signOut()
+          router.replace("/auth/login")
+        },
+      },
+    ])
+  }
 
   return (
     <View style={[styles.userHeader, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
@@ -42,11 +58,12 @@ export function Header({
         >
           <ListIcon color={theme.colors.text} size={20} />
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={[styles.headerButton, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-          onPress={handleUploadMix}
+          style={[styles.headerButton, { backgroundColor: theme.colors.error, borderColor: theme.colors.error }]}
+          onPress={handleLogout}
         >
-          <UploadIcon color={theme.colors.text} size={20} />
+          <LogOutIcon color={theme.colors.buttonText} size={20} />
         </TouchableOpacity>
       </View>
     </View>
@@ -89,6 +106,6 @@ const styles = StyleSheet.create({
   headerButton: {
     width: 36, height: 36, borderRadius: 18,
     justifyContent: "center", alignItems: "center",
-    marginLeft: 8, borderWidth: 1,
+    marginLeft: 12, borderWidth: 1,
   },
 })

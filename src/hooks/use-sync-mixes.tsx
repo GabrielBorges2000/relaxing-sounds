@@ -9,7 +9,7 @@ import axios from "axios"
 const API_BASE_URL = "https://api.example.com"
 
 export function useSyncMixes() {
-  const { token, isAuthenticated } = useAuth()
+  const { user } = useAuth()
   const [syncedMixes, setSyncedMixes] = useState<SoundMix[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -17,24 +17,20 @@ export function useSyncMixes() {
   // Create axios instance with auth header
   const api = axios.create({
     baseURL: API_BASE_URL,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
   })
 
   // Fetch synced mixes when authenticated
   useEffect(() => {
-    if (isAuthenticated && token) {
+    if (user) {
       fetchSyncedMixes()
     } else {
       setSyncedMixes([])
     }
-  }, [isAuthenticated, token])
+  }, [user])
 
   // Fetch synced mixes from API
   const fetchSyncedMixes = async () => {
-    if (!isAuthenticated) return
+    if (!user) return
 
     setIsSyncing(true)
     setError(null)
@@ -79,7 +75,7 @@ export function useSyncMixes() {
 
   // Sync a mix to the cloud
   const syncMix = async (mix: SoundMix) => {
-    if (!isAuthenticated) return
+    if (!user) return
 
     setIsSyncing(true)
     setError(null)
@@ -103,7 +99,7 @@ export function useSyncMixes() {
 
   // Delete a synced mix
   const deleteSyncedMix = async (mixId: string) => {
-    if (!isAuthenticated) return
+    if (!user) return
 
     setIsSyncing(true)
     setError(null)
